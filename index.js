@@ -23,7 +23,7 @@ app.post('/webhook', function(req, res) {
 	// Check Webhook reference
 	// https://api.ai/docs/fulfillment#response
 	const data = req.body;
-	var response = {
+	var text_response = {
 		"speech": data.result.fulfillment.speech,
 		"displayText": data.result.fulfillment.speech,
 		"data": {'key': 'value'},
@@ -37,43 +37,57 @@ app.post('/webhook', function(req, res) {
 		response.speech = response.displayText = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
 	}
 	else if (data.result.metadata.intentName === 'portfolio_analysis') {
-		request({
-			uri: "https://www.blackrock.com/tools/hackathon/portfolio-analysis"
-			qs: {
-				// need to use google cloud to host database of positions of various users
-				query: portfolio_position
-			} 
+		// TO-DO: pull positions from robinhood
+		const positions = ''
+		request('https://www.blackrock.com/tools/hackathon/portfolio-analysis', positions, function(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				console.log(body)
+			}
 		}).pipe(response.data)
 	}
 	else if (data.result.metadata.intentName === 'security_data') {
-		request({
-			uri: "https://www.blackrock.com/tools/hackathon/security-data"
-			qs: {
-				// TO-DO: create variable that stores tickers input by user
-				query: data.result.parameters.Entities
-			} 
+		// TODO: reference entities from api.ai
+		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
+		request('https://www.blackrock.com/tools/hackathon/security-data' + tickers, function(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				console.log(body)
+			}
 		}).pipe(response.data)
 	}
 	else if (data.result.metadata.intentName === 'search_securities') {
-		request({
-			uri: "https://www.blackrock.com/tools/hackathon/search-securities"
-			qs: {
-				query: data.result.parameters.Entities
-			} 
+		// TODO: reference entities from api.ai
+		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
+		request('https://www.blackrock.com/tools/hackathon/search-securities' + tickers, function(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				console.log(body)
+			}
 		}).pipe(response.data)
 	}
 	else if (data.result.metadata.intentName === 'performance') {
-		request({
-			uri: "https://www.blackrock.com/tools/hackathon/performance"
-			qs: {
-				query: data.result.parameters.Entities
-			} 
+		// TODO: reference entities from api.ai
+		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
+		request('https://www.blackrock.com/tools/hackathon/performance' + tickers, function(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				console.log(body)
+			}
 		}).pipe(response.data)
 	}
+	else if (data.result.metadata.intentName === 'learn') {
+		 
+	}
 	else {
-		response.speech = response.displayText = "Oh no no no! Try typing 'help' and I'll see if I can grant your wish."
+		response.speech = response.displayText = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
 	}
 
+	console.log('response payload: ' + JSON.stringify(response))
+
+	res.setHeader('Content-Type', 'application/JSON');
+	res.send(response)
+});
+
+// spin spin sugar - dennis thomas 2k17
+app.listen(app.get('port'), function() {
+	console.log('running on port', app.get('port'))
 });
 
 
