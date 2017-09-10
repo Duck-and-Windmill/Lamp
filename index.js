@@ -48,6 +48,7 @@ app.post('/webhook', function(req, res) {
 		case 'search_securities':
 		case 'performance':
 			response.data = blackrockApi(data.result)
+			response.data.gif = relevantGif(data.result.metadata.intentName)
 			break;
 		case 'learn':
 			//
@@ -73,9 +74,8 @@ app.post('/webhook', function(req, res) {
 		});
 	}
 
-	function relevantGif(dataResult) {
-		const relevantTag = ''
-		request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:g, fmt:json}} function(error, res2) {
+	function relevantGif(intent) {
+		request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', q:intent, limit:1 rating:'pg-13', lang:'en'}} function(error, res2) {
 			console.log(res2.statusCode)
 			if(!error && res2.statusCode == 200) {
 				console.dir(res2)
