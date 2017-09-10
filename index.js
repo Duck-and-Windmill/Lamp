@@ -73,7 +73,7 @@ app.post('/webhook', function(req, res) {
 		}).pipe(response.data)
 	}
 	else if (data.result.metadata.intentName === 'learn') {
-		 
+
 	}
 	else {
 		response.speech = response.displayText = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
