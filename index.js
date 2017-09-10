@@ -23,15 +23,17 @@ app.post('/webhook', function(req, res) {
 	// Check Webhook reference
 	// https://api.ai/docs/fulfillment#response
 	const data = req.body;
-	var response = {
-		"speech": data.result.fulfillment.speech,
-		"displayText": data.result.fulfillment.speech,
-		"data": {'key': 'value'},
-		"contextOut": [],
-		"source": "Genie" 
+	var response = {body:
+  	{
+  		"speech": data.result.fulfillment.speech,
+  		"displayText": data.result.fulfillment.speech,
+  		"data": {'key': 'value'},
+  		"contextOut": [],
+  		"source": "Genie" 
+	  }
 	}
 
-	console.log('received event payload: ', JSON.stringify(data, null, 4))
+	//console.log('received event payload: ', JSON.stringify(data, null, 4))
 
 	var responseString = "";
 
@@ -59,14 +61,13 @@ app.post('/webhook', function(req, res) {
 	function blackrockApi(dataResult) {
   	var returnData
 		var endpoint = dataResult.metadata.intentName
-		console.log(dataResult.parameters)
 		var tickers = {'identifiers' : dataResult.parameters.tickers}
+		console.log(endpoint)
 		console.log(tickers)
 
 		request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
-  		console.log(res2.statusCode)
+  		console.log("Blackrock API"+res2)
 			if (!error && res2.statusCode == 200) {
-				console.dir(res2)
 				return res2.body
 			}
 		});
@@ -90,8 +91,8 @@ app.post('/webhook', function(req, res) {
 });
 
 // spin spin sugar - dennis thomas 2k17
-app.listen(app.get('port'), function() {
-	console.log('running on port', app.get('port'))
+app.listen(80, function() {
+	console.log('running on port', 80)
 });
 
 
