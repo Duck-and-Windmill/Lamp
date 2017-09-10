@@ -42,6 +42,9 @@ app.post('/webhook', function(req, res) {
 			response.speech = response.displayText = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
 			res.json(response)
 			break;
+		case 'learn'
+			response.speech = response.displayText = "For now, your wish is my command: https://www.google.com/search?q=" + data.result.parameters.tickers
+			break;
 		case 'portfolio-analysis':
 			// blackrockApi()
 			break;
