@@ -46,13 +46,10 @@ app.post('/webhook', function(req, res) {
 			// blackrockApi()
 			break;
 		case 'security-data':
-		  //resultMap.SEARCH_RESULTS.resultList[0].assetType assetClass, 
-		case 'search-securities':
-		case 'performance':
+		//resultMap.SECURITY.gics1Sector gics3industry 
 		  blackrockApi(data.result, function(err, blackRes){
-  		  response.speech = response.displayText = response.displayText + " \n" + blackRes
-  		  
   		  console.dir(blackRes)
+  		  response.speech = response.displayText = response.displayText + " \n GICS 1 Sector: " + blackRes.SECURITY[0].gics1Sector + ". \n GICS 3 Industry: " + blackRes.SECURITY[0].gics3Industry
   		  
   		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
     		  response.data.gif = gifRes
@@ -62,6 +59,36 @@ app.post('/webhook', function(req, res) {
   		  })
 		  })
 			break;
+			
+		case 'search-securities':
+		//resultMap.SEARCH_RESULTS.resultList[0].assetType assetClass
+		  blackrockApi(data.result, function(err, blackRes){
+  		  response.speech = response.displayText = response.displayText + " \n Asset Type: " + blackRes.SEARCH_RESULTS[0].resultList[0].assetType + ". \n Asset Class: " + blackRes.SEARCH_RESULTS[0].resultList[0].assetClass
+  		  
+  		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
+    		  response.data.gif = gifRes
+    		  
+    		  console.log('response payload: ' + JSON.stringify(response))
+    		  res.json(response)
+  		  })
+		  })
+			break;
+			
+		case 'performance':
+		  blackrockApi(data.result, function(err, blackRes){
+  		  response.speech = response.displayText = response.displayText + " \n Start Date Risk: " + blackRes.RETURNS[0].latestPerf.sinceStartDateRisk + ". \n Since start date: " + blackRes.RETURNS[0].latestPerf.sinceStartDate + ". \n High return: " + blackRes.RETURNS[0].highReturn + ". \n Low return: " + blackRes.RETURNS[0].lowReturn
+  		  
+  		  console.dir(blackRes.RETURNS[0].latestPerf)
+  		  
+  		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
+    		  response.data.gif = gifRes
+    		  
+    		  console.log('response payload: ' + JSON.stringify(response))
+    		  res.json(response)
+  		  })
+		  })
+			break;
+			
 		case 'learn':
 			//
 			break;
@@ -82,7 +109,7 @@ function blackrockApi(dataResult, callback) {
   	res2.body = JSON.parse(res2.body)
 		console.log("Blackrock API "+res2.statusCode)
 		if (!error && res2.statusCode == 200) {
-			callback(null,res2.body.resultMap.SEARCH_RESULTS[0])
+			callback(null,res2.body.resultMap)
 		}else{
   	  callback(true)	
 		}
