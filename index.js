@@ -4,8 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const request = require('request')
-const JSONStream = require('JSONStream')
-const es = require('event-stream')
 
 
 app.set('port', (process.env.PORT || 5000))
@@ -75,7 +73,7 @@ app.post('/webhook', function(req, res) {
 	}
 
 	function relevantGif(intent) {
-		request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', q:intent, limit:1 rating:'pg-13', lang:'en'}} function(error, res2) {
+		request({url:'http://api.giphy.com/v1/gifs/search', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', q:intent, limit:1, offset:0, rating:'pg-13', lang:'en', fmt:'json'}}, function(error, res2) {
 			console.log(res2.statusCode)
 			if(!error && res2.statusCode == 200) {
 				console.dir(res2)
