@@ -48,6 +48,7 @@ app.post('/webhook', function(req, res) {
 		case 'search_securities':
 		case 'performance':
 			response.data = blackrockApi(data.result)
+			response.data.gif = relevantGif(data.result.metadata.intentName)
 			break;
 		case 'learn':
 			//
@@ -57,22 +58,6 @@ app.post('/webhook', function(req, res) {
 	}
 
 	response.speech = response.displayText = responseString
-
-	function blackrockApi(dataResult) {
-  	var returnData
-		var endpoint = dataResult.metadata.intentName
-		var tickers = {'identifiers' : dataResult.parameters.tickers}
-		console.log(endpoint)
-		console.log(tickers)
-
-		request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
-  		console.log("Blackrock API"+res2)
-			if (!error && res2.statusCode == 200) {
-				return res2.body
-			}
-		});
-		
-	}
 
 	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
 	// 	// TO-DO: pull positions from robinhood
@@ -90,9 +75,34 @@ app.post('/webhook', function(req, res) {
 	res.send(response)
 });
 
+function blackrockApi(dataResult) {
+	var returnData
+	var endpoint = dataResult.metadata.intentName
+	var tickers = {'identifiers' : dataResult.parameters.tickers}
+	console.log(endpoint)
+	console.log(tickers)
+
+	request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
+		console.log("Blackrock API"+res2)
+		if (!error && res2.statusCode == 200) {
+			return res2.body
+		}
+	});
+	
+}
+
+function relevantGif(dataResult) {
+	const relevantTag = ''
+	request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:g, fmt:json}} function(error, res2) {
+		console.log(res2.statusCode)
+		if(!error && res2.statusCode == 200) {
+			console.dir(res2)
+			return res2.body
+		}
+	})
+}
+
 // spin spin sugar - dennis thomas 2k17
 app.listen(80, function() {
 	console.log('running on port', 80)
 });
-
-
