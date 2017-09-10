@@ -23,7 +23,7 @@ app.post('/webhook', function(req, res) {
 	// Check Webhook reference
 	// https://api.ai/docs/fulfillment#response
 	const data = req.body;
-	var text_response = {
+	var response = {
 		"speech": data.result.fulfillment.speech,
 		"displayText": data.result.fulfillment.speech,
 		"data": {'key': 'value'},
@@ -33,51 +33,51 @@ app.post('/webhook', function(req, res) {
 
 	console.log('received event payload: ', JSON.stringify(data, null, 4))
 
-	if (data.result.metadata.intentName === 'help') {
-		response.speech = response.displayText = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
-	}
-	else if (data.result.metadata.intentName === 'portfolio_analysis') {
-		// TO-DO: pull positions from robinhood
-		const positions = ''
-		request('https://www.blackrock.com/tools/hackathon/portfolio-analysis', positions, function(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				console.log(body)
-			}
-		}).pipe(response.data)
-	}
-	else if (data.result.metadata.intentName === 'security_data') {
-		// TODO: reference entities from api.ai
-		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
-		request('https://www.blackrock.com/tools/hackathon/security-data' + tickers, function(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				console.log(body)
-			}
-		}).pipe(response.data)
-	}
-	else if (data.result.metadata.intentName === 'search_securities') {
-		// TODO: reference entities from api.ai
-		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
-		request('https://www.blackrock.com/tools/hackathon/search-securities' + tickers, function(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				console.log(body)
-			}
-		}).pipe(response.data)
-	}
-	else if (data.result.metadata.intentName === 'performance') {
-		// TODO: reference entities from api.ai
-		const tickers = '?identifiers=' + JSON.stringify(data.result.parameters)
-		request('https://www.blackrock.com/tools/hackathon/performance' + tickers, function(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				console.log(body)
-			}
-		}).pipe(response.data)
-	}
-	else if (data.result.metadata.intentName === 'learn') {
+	responseString = "";
 
+	switch (data.result.metadata.intentName) {
+		case 'help':
+			responseString = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
+			break;
+		case 'portfolio_analysis':
+			// blackrockApi()
+			break;
+		case 'security_data':
+		case 'search_securities':
+		case 'performance':
+			response.data = blackrockApi(data.result)
+			break;
+		case 'learn':
+			//
+			break;
+		default:
+			responseString = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
 	}
-	else {
-		response.speech = response.displayText = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
+
+	response.speech = response.displayText = responseString
+
+	function blackrockApi(dataResult) {
+		var endpoint = dataResult.metadata.intentName
+		var tickers = '?identifiers=' + JSON.stringify(dataResult.parameters)
+
+		request('https://www.blackrock.com/tools/hackathon/' + endpoint + tickers, function(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				console.log(body)
+			}
+		}).pipe(returnData)
+
+		return returnData
 	}
+
+	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
+	// 	// TO-DO: pull positions from robinhood
+	// 	const positions = ''
+	// 	request('https://www.blackrock.com/tools/hackathon/portfolio-analysis', positions, function(error, response, body) {
+	// 		if (!error && response.statusCode == 200) {
+	// 			console.log(body)
+	// 		}
+	// 	}).pipe(response.data)
+	// }
 
 	console.log('response payload: ' + JSON.stringify(response))
 
