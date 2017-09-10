@@ -54,6 +54,7 @@ app.post('/webhook', function(req, res) {
   		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
     		  response.data.gif = gifRes
     		  
+    		  console.log('response payload: ' + JSON.stringify(response))
     		  res.send(response)
   		  })
 		  })
@@ -75,15 +76,13 @@ app.post('/webhook', function(req, res) {
 	// 	}).pipe(response.data)
 	// }
 
-	console.log('response payload: ' + JSON.stringify(response))
-
 // 	res.send(response)
 });
 
 function blackrockApi(dataResult, callback) {
 	var returnData
 	var endpoint = dataResult.metadata.intentName
-	var tickers = {'identifiers' : dataResult.parameters.tickers}
+	var tickers = {identifiers : dataResult.parameters.tickers1}
 	console.log(endpoint)
 	console.log(tickers)
 
@@ -97,13 +96,12 @@ function blackrockApi(dataResult, callback) {
 	
 }
 
-function relevantGif(dataResult, callback) {
+function relevantGif(intent, callback) {
 	const relevantTag = ''
-	request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:'g', fmt:'json'}}, function(error, res3) {
-		console.log(res3.statusCode)
+	request({url:'http://api.giphy.com/v1/gifs/search', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8',  q:intent, limit:1, rating:'pg-13', lang:'en', type:'text/json'}}, function(error, res3) {
+  	res3.body = JSON.parse(res3.body)
 		if(!error && res3.statusCode == 200) {
-			console.dir(res3)
-			calslback(null,res2.body)
+			callback(null, 'https://media.giphy.com/media/' + res3.body.data[0].id + '/source.gif')
 		}
 	})
 }
