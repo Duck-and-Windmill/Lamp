@@ -28,12 +28,12 @@ app.post('/webhook', function(req, res) {
 		"displayText": data.result.fulfillment.speech,
 		"data": {'key': 'value'},
 		"contextOut": [],
-		"source": Genie 
+		"source": "Genie" 
 	}
 
 	console.log('received event payload: ', JSON.stringify(data, null, 4))
 
-	responseString = "";
+	var responseString = "";
 
 	switch (data.result.metadata.intentName) {
 		case 'help':
@@ -57,16 +57,20 @@ app.post('/webhook', function(req, res) {
 	response.speech = response.displayText = responseString
 
 	function blackrockApi(dataResult) {
+  	var returnData
 		var endpoint = dataResult.metadata.intentName
-		var tickers = '?identifiers=' + JSON.stringify(dataResult.parameters)
+		console.log(dataResult.parameters)
+		var tickers = {'identifiers' : dataResult.parameters.tickers}
+		console.log(tickers)
 
-		request('https://www.blackrock.com/tools/hackathon/' + endpoint + tickers, function(error, response, body) {
-			if (!error && response.statusCode == 200) {
-				console.log(body)
+		request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
+  		console.log(res2.statusCode)
+			if (!error && res2.statusCode == 200) {
+				console.dir(res2)
+				return res2.body
 			}
-		}).pipe(returnData)
-
-		return returnData
+		});
+		
 	}
 
 	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
