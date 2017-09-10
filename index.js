@@ -3,7 +3,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const request = require('request');
+const request = require('request')
+const JSONStream = require('JSONStream')
+const es = require('event-stream')
 
 
 app.set('port', (process.env.PORT || 5000))
@@ -57,20 +59,29 @@ app.post('/webhook', function(req, res) {
 	response.speech = response.displayText = responseString
 
 	function blackrockApi(dataResult) {
-  	var returnData
 		var endpoint = dataResult.metadata.intentName
 		console.log(dataResult.parameters)
 		var tickers = {'identifiers' : dataResult.parameters.tickers}
 		console.log(tickers)
 
 		request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
-  		console.log(res2.statusCode)
+  			console.log(res2.statusCode)
 			if (!error && res2.statusCode == 200) {
 				console.dir(res2)
 				return res2.body
 			}
 		});
-		
+	}
+
+	function relevantGif(dataResult) {
+		const relevantTag = ''
+		request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:g, fmt:json}} function(error, res2) {
+			console.log(res2.statusCode)
+			if(!error && res2.statusCode == 200) {
+				console.dir(res2)
+				return res2.body
+			}
+		})
 	}
 
 	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
