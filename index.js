@@ -22,7 +22,6 @@ app.post('/webhook', function(req, res) {
 	// Parse messenger payload
 	// Check Webhook reference
 	// https://api.ai/docs/fulfillment#response
-	res.setHeader('Content-Type', 'application/JSON');
 	const data = req.body;
 	var response = 
   	{
@@ -40,22 +39,26 @@ app.post('/webhook', function(req, res) {
 
 	switch (data.result.metadata.intentName) {
 		case 'help':
-			responseString = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
+			response.speech = response.displayText = "Try asking about:\nPortfolio analysis\nSecurity data for APPL and NVDA\nSearch securities for APPL and NVDA\nPerformance of APPL and NVDA\n"
+			res.json(response)
 			break;
-		case 'portfolio_analysis':
+		case 'portfolio-analysis':
 			// blackrockApi()
 			break;
-		case 'security_data':
-		case 'search_securities':
+		case 'security-data':
+		  //resultMap.SEARCH_RESULTS.resultList[0].assetType assetClass, 
+		case 'search-securities':
 		case 'performance':
 		  blackrockApi(data.result, function(err, blackRes){
-  		  response.speech = response.displayText = response.displayText + blackRes
+  		  response.speech = response.displayText = response.displayText + " \n" + blackRes
+  		  
+  		  console.dir(blackRes)
   		  
   		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
     		  response.data.gif = gifRes
     		  
     		  console.log('response payload: ' + JSON.stringify(response))
-    		  res.send(response)
+    		  res.json(response)
   		  })
 		  })
 			break;
@@ -63,35 +66,26 @@ app.post('/webhook', function(req, res) {
 			//
 			break;
 		default:
-			responseString = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
+			response.speech = response.displayText = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
+			res.json(response)
 	}
 
-	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
-	// 	// TO-DO: pull positions from robinhood
-	// 	const positions = ''
-	// 	request('https://www.blackrock.com/tools/hackathon/portfolio-analysis', positions, function(error, response, body) {
-	// 		if (!error && response.statusCode == 200) {
-	// 			console.log(body)
-	// 		}
-	// 	}).pipe(response.data)
-	// }
-
-// 	res.send(response)
 });
 
 function blackrockApi(dataResult, callback) {
 	var returnData
-	var endpoint = dataResult.metadata.intentName
-	var tickers = {identifiers : dataResult.parameters.tickers1}
-	console.log(endpoint)
+	var url = 'https://www.blackrock.com/tools/hackathon/' + dataResult.metadata.intentName
+	var tickers = {identifiers : dataResult.parameters.tickers}
 	console.log(tickers)
 
-	request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
+	request({url:url, qs:tickers}, function(error, res2) {
+  	res2.body = JSON.parse(res2.body)
 		console.log("Blackrock API "+res2.statusCode)
 		if (!error && res2.statusCode == 200) {
-			callback(null,"fucker")
+			callback(null,res2.body.resultMap.SEARCH_RESULTS[0])
+		}else{
+  	  callback(true)	
 		}
-		callback(true)
 	});
 	
 }
