@@ -22,20 +22,21 @@ app.post('/webhook', function(req, res) {
 	// Parse messenger payload
 	// Check Webhook reference
 	// https://api.ai/docs/fulfillment#response
+	res.setHeader('Content-Type', 'application/JSON');
 	const data = req.body;
-	var response = {body:
+	var response = 
   	{
   		"speech": data.result.fulfillment.speech,
   		"displayText": data.result.fulfillment.speech,
-  		"data": {'key': 'value'},
+  		"data": {'gif': ''},
   		"contextOut": [],
   		"source": "Genie" 
 	  }
-	}
+	
 
 	//console.log('received event payload: ', JSON.stringify(data, null, 4))
 
-	var responseString = "";
+	var responseString = response.displayText;
 
 	switch (data.result.metadata.intentName) {
 		case 'help':
@@ -47,8 +48,15 @@ app.post('/webhook', function(req, res) {
 		case 'security_data':
 		case 'search_securities':
 		case 'performance':
-			response.data = blackrockApi(data.result)
-			response.data.gif = relevantGif(data.result.metadata.intentName)
+		  blackrockApi(data.result, function(err, blackRes){
+  		  response.speech = response.displayText = response.displayText + blackRes
+  		  
+  		  relevantGif(data.result.metadata.intentName, function(err, gifRes) {
+    		  response.data.gif = gifRes
+    		  
+    		  res.send(response)
+  		  })
+		  })
 			break;
 		case 'learn':
 			//
@@ -56,8 +64,6 @@ app.post('/webhook', function(req, res) {
 		default:
 			responseString = "Oh no no no, nooo! Try typing 'help' and I'll see if I can grant your wish."
 	}
-
-	response.speech = response.displayText = responseString
 
 	// else if (data.result.metadata.intentName === 'portfolio_analysis') {
 	// 	// TO-DO: pull positions from robinhood
@@ -71,11 +77,10 @@ app.post('/webhook', function(req, res) {
 
 	console.log('response payload: ' + JSON.stringify(response))
 
-	res.setHeader('Content-Type', 'application/JSON');
-	res.send(response)
+// 	res.send(response)
 });
 
-function blackrockApi(dataResult) {
+function blackrockApi(dataResult, callback) {
 	var returnData
 	var endpoint = dataResult.metadata.intentName
 	var tickers = {'identifiers' : dataResult.parameters.tickers}
@@ -83,26 +88,27 @@ function blackrockApi(dataResult) {
 	console.log(tickers)
 
 	request({url:'https://www.blackrock.com/tools/hackathon/' + endpoint, qs:tickers}, function(error, res2) {
-		console.log("Blackrock API"+res2)
+		console.log("Blackrock API "+res2.statusCode)
 		if (!error && res2.statusCode == 200) {
-			return res2.body
+			callback(null,"fucker")
 		}
+		callback(true)
 	});
 	
 }
 
-function relevantGif(dataResult) {
+function relevantGif(dataResult, callback) {
 	const relevantTag = ''
-	request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:g, fmt:json}} function(error, res2) {
-		console.log(res2.statusCode)
-		if(!error && res2.statusCode == 200) {
-			console.dir(res2)
-			return res2.body
+	request({url:'http://api.giphy.com/v1/gifs/', qs:{api_key:'988ef12db44f4567ab3b3997b85df0f8', tag:relevantTag, rating:'g', fmt:'json'}}, function(error, res3) {
+		console.log(res3.statusCode)
+		if(!error && res3.statusCode == 200) {
+			console.dir(res3)
+			calslback(null,res2.body)
 		}
 	})
 }
 
 // spin spin sugar - dennis thomas 2k17
-app.listen(80, function() {
-	console.log('running on port', 80)
+app.listen(5000, function() {
+	console.log('running on port', 5000)
 });
